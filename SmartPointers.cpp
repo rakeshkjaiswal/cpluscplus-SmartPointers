@@ -12,41 +12,48 @@ public:
     SharedPtr():ptr(nullptr), refCount(nullptr) {}
     SharedPtr(T* p) {
         ptr = p;
-        refCount = new int;
-        *refCount = 1;
+        refCount = new int(1);
     }
-    SharedPtr(SharedPtr& ref) {
+    SharedPtr(const SharedPtr& ref) {
         ptr = ref.ptr;
-        *(ref.refCount)++;
         refCount = ref.refCount;
+        (*refCount)++;
     }
     SharedPtr& operator=(SharedPtr& ref) {
         if (*this == ref)
             return *this;
-
-        (*refCount)--;
-        if (*refCount == 0) {
-            delete ptr;
-            delete refCount;
+        if (refCount != nullptr) {
+            (*refCount)--;
+            if (*refCount == 0) {
+                delete ptr;
+                delete refCount;
+            }
         }
         ptr = ref.ptr;
         refCount = ref.refCount;
         (*refCount)++;
     }
     ~SharedPtr() {
-        (*refCount)--;
-        if (*refCount == 0) {
-            delete ptr;
-            delete refCount;
+        cout << "\n~SharedPtr() is called:";
+        if (refCount != nullptr) {
+            (*refCount)--;
+            cout << "\nrefCount:" << *refCount;
+            if (*refCount == 0) {
+                cout << "\n~SharedPtr() refCount is zero";
+                delete ptr;
+                delete refCount;
+            }
         }
     }
+    T& operator*() { return *ptr; }
+    T* operator->() { return ptr; }
 };
 int main()
 {
     std::cout << "Hello World!\n";
 
     SharedPtr<char> mySPtr;
-    char* name = new char;
+    char* name = new char[2];
     cin >> name;
     string myname("Rakesh");
     
@@ -55,10 +62,12 @@ int main()
     if (name != nullptr)
         cout << "\nEntered name is " << name;
     {
-        //SharedPtr<char> mySPtr1(name);
+        SharedPtr<char> mySPtr1(name);
+        {
+            SharedPtr<char> mySPtr2(mySPtr1);
+            cout <<*mySPtr2;
+        }
     }
-    if (name != nullptr)
-        cout << "\nEntered name is " << name;
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
